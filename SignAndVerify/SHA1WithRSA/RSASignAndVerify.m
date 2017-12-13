@@ -11,17 +11,6 @@
 
 @implementation RSASignAndVerify
 
-
-//+ (NSString *)unwrapPublicKey:(NSString *)pubkey
-//{
-//    
-//}
-//
-//+ (NSString *)unwrapPrivateKey:(NSString *)prikey
-//{
-//    
-//}
-
 + (SecKeyRef)addPrivateKey:(NSString *)key{
     
     // This is a base64 encoded key. so, decode it.
@@ -105,16 +94,6 @@
     return keyRef;
 }
 
-// digest message with sha1
-+ (NSData *)sha1:(NSString *)str
-{
-    const void *data = [str cStringUsingEncoding:NSUTF8StringEncoding];
-    CC_LONG len = (CC_LONG)strlen(data);
-    uint8_t * md = malloc( CC_SHA1_DIGEST_LENGTH * sizeof(uint8_t) );;
-    CC_SHA1(data, len, md);
-    return [NSData dataWithBytes:md length:CC_SHA1_DIGEST_LENGTH];
-}
-// Using the RSA private key to sign the specified message
 + (NSString *)sign:(NSString *)content withPriKey:(NSString *)priKey
 {
     SecKeyRef privateKeyRef = [self addPrivateKey:priKey];
@@ -129,6 +108,7 @@
     NSData *outData = [NSData dataWithBytes:sig length:sig_len];
     return [outData base64EncodedStringWithOptions:NSDataBase64Encoding64CharacterLineLength];
 }
+
 // verify Signature
 + (BOOL)verify:(NSString *)content signature:(NSString *)signature withPublivKey:(NSString *)publicKey {
     
@@ -141,6 +121,122 @@
     
     if (status ==noErr) { return  YES; }
     else{ NSLog(@"验签失败:%d",status); return NO; }
+}
+
+#pragma mark - new method
+
+// Using the RSA private key to sign the specified message by SecPadding
++ (NSString *)sign:(NSString *)content withPriKey:(NSString *)priKey withShaX:(SecPadding)type
+{
+    return [self sign:content shaX:type length:[self length:type]  withPriKey:priKey];
+}
+
++ (BOOL)verify:(NSString *)content signature:(NSString *)signature publivKey:(NSString *)publicKey withShaX:(SecPadding)type
+{
+    return [self verify:content
+                   shaX:type
+                 length:[self length:type]
+              signature:signature
+          withPublivKey:publicKey];
+}
+
+// Using the RSA private key to sign the specified message
++ (NSString *)sign:(NSString *)content shaX:(SecPadding)type length:(int)length withPriKey:(NSString *)priKey
+{
+    //    NSAssert(type > kSecPaddingPKCS1MD5, @"type no supported!");
+    SecKeyRef privateKeyRef = [self addPrivateKey:priKey];
+    if (!privateKeyRef) { NSLog(@"添加私钥失败"); return  nil; }
+    NSData *shaXData = [self shaX:content type:type length:length];
+    unsigned char *sig = (unsigned char *)malloc(256);
+    size_t sig_len;
+    OSStatus status = SecKeyRawSign(privateKeyRef, type, [shaXData bytes], length, sig, &sig_len);
+    
+    if (status != noErr) { NSLog(@"加签失败:%d",status); return nil; }
+    
+    NSData *outData = [NSData dataWithBytes:sig length:sig_len];
+    
+    return [outData base64EncodedStringWithOptions:NSDataBase64Encoding64CharacterLineLength];
+}
+
+// verify Signature
++ (BOOL)verify:(NSString *)content shaX:(SecPadding)type length:(int)length signature:(NSString *)signature withPublivKey:(NSString *)publicKey {
+    
+    SecKeyRef publicKeyRef = [self addPublicKey:publicKey];
+    if (!publicKeyRef) { NSLog(@"添加公钥失败"); return NO; }
+    NSData *originData = [self shaX:content type:type length:length];
+    NSData *signatureData = [[NSData alloc] initWithBase64EncodedString:signature options:NSDataBase64DecodingIgnoreUnknownCharacters];
+    if (!originData || !signatureData) { return NO; }
+    OSStatus status =  SecKeyRawVerify(publicKeyRef, type, [originData bytes], originData.length, [signatureData bytes], signatureData.length);
+    
+    if (status == noErr) { return  YES; }
+    else{ NSLog(@"验签失败:%d",status); return NO; }
+}
+
+#pragma mark - Arithmetic
+
+// digest message with sha1
++ (NSData *)sha1:(NSString *)str
+{
+    const void *data = [str cStringUsingEncoding:NSUTF8StringEncoding];
+    CC_LONG len = (CC_LONG)strlen(data);
+    uint8_t * md = malloc( CC_SHA1_DIGEST_LENGTH * sizeof(uint8_t) );;
+    CC_SHA1(data, len, md);
+    return [NSData dataWithBytes:md length:CC_SHA1_DIGEST_LENGTH];
+}
+
+// disgest message with shaX by length
++ (NSData *)shaX:(NSString *)str type:(SecPadding)type length:(int)length
+{
+    const void *data = [str cStringUsingEncoding:NSUTF8StringEncoding];
+    CC_LONG len = (CC_LONG)strlen(data);
+    uint8_t * md = malloc( length * sizeof(uint8_t));
+    switch (type) {
+        case kSecPaddingPKCS1SHA1:
+            CC_SHA1(data, len, md);
+            break;
+        case kSecPaddingPKCS1SHA224:
+            CC_SHA224(data, len, md);
+            break;
+        case kSecPaddingPKCS1SHA256:
+            CC_SHA256(data, len, md);
+            break;
+        case kSecPaddingPKCS1SHA384:
+            CC_SHA384(data, len, md);
+            break;
+        case kSecPaddingPKCS1SHA512:
+            CC_SHA512(data, len, md);
+            break;
+        default:
+            break;
+    }
+    return [NSData dataWithBytes:md length:length];
+}
+
+//get length by Secpadding
++ (int)length:(SecPadding)type
+{
+    int length = 0;
+    switch (type) {
+        case kSecPaddingPKCS1SHA1:
+            length = CC_SHA1_DIGEST_LENGTH;
+            break;
+        case kSecPaddingPKCS1SHA224:
+            length = CC_SHA224_DIGEST_LENGTH;
+            break;
+        case kSecPaddingPKCS1SHA256:
+            length = CC_SHA256_DIGEST_LENGTH;
+            break;
+        case kSecPaddingPKCS1SHA384:
+            length = CC_SHA384_DIGEST_LENGTH;
+            break;
+        case kSecPaddingPKCS1SHA512:
+            length = CC_SHA512_DIGEST_LENGTH;
+            break;
+        default:
+            NSAssert(length != 0, @"this SecPadding type no supported!");
+            break;
+    }
+    return length;
 }
 
 @end

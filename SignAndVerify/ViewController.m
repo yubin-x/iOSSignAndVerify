@@ -21,11 +21,16 @@
     [self testSignAndVerifyLocalData];
 }
 
+- (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event
+{
+    [self testSignAndVerifyLocalData];
+}
+
 - (void)testSignAndVerifyLocalData
 {
-    NSString *prikey = @"MIICXAIBAAKBgQDDexXjLoCmBU3TqiiAmHqkX0AMxLaPIz9U2nExHMQLDjQTZmpK\nsJTClwec/m+NMapG1lujQnoinp/jKtXCUPWWYGJItxqXAM0sT91QtyotCYynwHHt\nwhsYQedW9/KaN6eCMnrZoDd8oTKJQszjpFpHxV4GOKqkFRL2UBN6a4n+WwIDAQAB\nAoGAB0HNiTaTvhYaUo5RnJyMiQekOBUhdeToF/1YEGux93sagdHehlFR5Ht44+Iq\nQAKlAKY6lrAEGr7qzqMrdmBNDaxiPfhKU/NqLwNDP5sbZaA40+MD2nyuCsfPAD4m\npRrd9Ut4KXUeubQn5B5y4i74bXTKkQvpueoLenE5HKn3DyECQQD75vjg3p1Lbu9E\nBngPIS8bysmafdY8kgYxyjA088HqEEh4k/oyGg1Cz8kDE/77+kf23ksasVf8cuWL\naLN1Z8dRAkEAxqkmiN3HOuDFeDAxG+HF4vomIp0gnqCXZGsCPAKbHdBytdr9mTxj\nYtj9PZ4ZzyMIM4H1JeOj36j1O2bsGJHX6wJAGgOQUCitNc0PCIdifq1+n/AhQcMd\nDMRHv3yR3eYOcI2d7lXZ0LLAC9ZJe/fkrUD7jZMHToph+8Ah1HPLlKRTAQJACWvU\nLAF4hU5LjxuZ+JyIae87B8Ez3tH23AhHHtlwycUs63rrM+0tOW7Y86cfyjb7GJY9\nLgLRrrWwi5Sh9bhU6QJBAJbWhJknnygWs8jQTINCgOhpCFmIKMJCsuMd6Zuh0PCX\n8Fu8LIXQEbNGck4lGheyuz7ppjCwCQ8408jhNNMZ5eM=";
+    NSString *prikey = @"MIICXAIBAAKBgQDBO6ftQaxpW0YxFnNUELN/Hcpl3Rzpms4JMRToJoA/8WMyyz8GFsoqcWLcRoL8JjsisjzFVeaCMvPpjXZAGndY0cykllEN4/DZ5TGm6qZfuK2motIqLhMBudQN88nNEoSo1s/rxx86eK7OmLCgPhd3PctNAFD3dmgJRnv7L+53yQIDAQABAoGAGN4GhF/5Qi2+4L5U5TKpBujcjTNhbya+8Svh1uZths0XyQei+rOgHMouwM5KOQzqe1KYw4SEf6jy/tF3sFQ3m3tGudf+BkwfqKarAU4Z1sULnfIiEs4UVSpagdPZ7bQ7T2o4ZNec2B/USyPE1Zor867y27SgLOzEEfoxH0KhQwECQQDonl2hD7fnfhg6eCBDt/4aedZ+0KhwJR/XP5JRvsvXRh5eCFxuk7D+DgW0dK0BpByv/v/KU2pYAKd3t01Rg95RAkEA1KfWsIoNvZ5CefzZudZBHPI4Qpn5NT52iO0b8spOFMlEMA8KRtQHXTu9S2+w+YEzAauuqSeS6wQLHFFp8hHL+QJAdNqpOjGFNtsXHLgfrSUOlwpBgC8d jkh3+E9NF5d7Gsd0ldQparrynI06vG4oQrzIVHkK0f6ZW1/owLDqPFq8IQJAcs7iU5FU9chZb26ZRYFsyenjgeGK77n3WNlaO2wJV6OJksCr9a1HBIjaG74DN9EO7pn3xA8/fG5EaVdy8WO2UQJBAJXq1CbUQFuUPn5SOqU2EmQJ3ByXHXp4jXGpfWP0cshtLsasHVvgTvs9l248QknQCk8n949i9twu2L457JnGyAA=";
     
-    NSString *pubkey = @"MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDDexXjLoCmBU3TqiiAmHqkX0AM\nxLaPIz9U2nExHMQLDjQTZmpKsJTClwec/m+NMapG1lujQnoinp/jKtXCUPWWYGJI\ntxqXAM0sT91QtyotCYynwHHtwhsYQedW9/KaN6eCMnrZoDd8oTKJQszjpFpHxV4G\nOKqkFRL2UBN6a4n+WwIDAQAB";
+    NSString *pubkey = @"MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDBO6ftQaxpW0YxFnNUELN/Hcpl3Rzpms4JMRToJoA/8WMyyz8GFsoqcWLcRoL8JjsisjzFVeaCMvPpjXZAGndY0cykllEN4/DZ5TGm6qZfuK2motIqLhMBudQN88nNEoSo1s/rxx86eK7OmLCgPhd3PctNAFD3dmgJRnv7L+53yQIDAQAB";
     
     NSString *aeskey = @"zxczxczxczxc";
     
@@ -48,6 +53,12 @@
         NSString *decryptString = [cipherTextByAES aes256_decryptWithKey:aeskey];
         NSLog(@"【解密密文得到的明文】：%@",decryptString);
     }
+    
+    //support SHA1、SHA224、SHA256、 SHA384、SHA512
+    NSString *signSHA384 = [RSASignAndVerify sign:plainText withPriKey:prikey withShaX:kSecPaddingPKCS1SHA384];
+    success = [RSASignAndVerify verify:plainText signature:signSHA384 publivKey:pubkey withShaX:kSecPaddingPKCS1SHA384];
+    NSLog(@"【SHA1】:%@", signSHA384);
+    
 }
 
 - (void)didReceiveMemoryWarning {
