@@ -10,7 +10,14 @@
 
 @interface RSASignAndVerify : NSObject
 
+//SHA1
 + (NSString *)sign:(NSString *)content withPriKey:(NSString *)priKey;
+
 + (BOOL)verify:(NSString *)content signature:(NSString *)signature withPublivKey:(NSString *)publicKey;
+
+//SHA1、SHA224、SHA256、SHA384、SHA512
++ (NSString *)sign:(NSString *)content withPriKey:(NSString *)priKey withShaX:(SecPadding)type;
+
++ (BOOL)verify:(NSString *)content signature:(NSString *)signature publivKey:(NSString *)publicKey withShaX:(SecPadding)type;
 
 @end
